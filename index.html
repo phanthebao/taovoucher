@@ -31,13 +31,6 @@
       max-width: 100%;
       border: 1px solid #ccc;
     }
-    a#downloadLink {
-      display: none;
-      margin-top: 12px;
-      font-size: 16px;
-      color: #007bff;
-      text-decoration: underline;
-    }
   </style>
 </head>
 <body>
@@ -47,9 +40,11 @@
   <input type="date" id="createDate">
   <button onclick="generateVoucher()">Tạo voucher</button>
 
-  <canvas id="voucherCanvas" width="2000" height="1050"></canvas>
+  <!-- Kích thước thật của ảnh voucher -->
+  <canvas id="voucherCanvas" width="2000" height="1050" style="width: 100%; height: auto;"></canvas>
+
   <br>
-  <a id="downloadLink" download="voucher.png">📥 Tải ảnh voucher</a>
+  <button onclick="downloadImage()">📥 Tải ảnh voucher</button>
 
   <script>
     function removeVietnamese(str) {
@@ -92,20 +87,23 @@
         expiredDate.setDate(expiredDate.getDate() + 30);
         const expiredStr = formatDate(expiredDate);
 
-        ctx.font = 'bold 36px Arial';
+        ctx.font = 'bold 35px Arial';
         ctx.fillStyle = '#000';
 
-        // 📍Vị trí mã voucher và ngày hết hạn (chỉnh theo hình)
+        // 📍Vị trí chữ tương ứng ảnh kích thước 2000x1199
         ctx.fillText(code, 180, 230);       // mã voucher
         ctx.fillText(expiredStr, 980, 230); // ngày hết hạn
-
-        const link = document.getElementById('downloadLink');
-        link.href = canvas.toDataURL('image/png');
-        link.style.display = 'inline';
       };
 
-      // ⚠️ Đảm bảo ảnh luôn load lại (tránh cache)
-      img.src = 'voucher_template.png?' + new Date().getTime();
+      img.src = 'voucher_template.png?' + new Date().getTime(); // tránh cache
+    }
+
+    function downloadImage() {
+      const canvas = document.getElementById('voucherCanvas');
+      const link = document.createElement('a');
+      link.download = 'voucher.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
     }
   </script>
 
