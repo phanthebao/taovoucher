@@ -31,6 +31,11 @@
       max-width: 100%;
       border: 1px solid #ccc;
     }
+    img.generated {
+      width: 100%;
+      margin-top: 20px;
+      border: 1px solid #ccc;
+    }
   </style>
 </head>
 <body>
@@ -40,11 +45,9 @@
   <input type="date" id="createDate">
   <button onclick="generateVoucher()">Tạo voucher</button>
 
-  <!-- Kích thước thật của ảnh voucher -->
   <canvas id="voucherCanvas" width="2000" height="1050" style="width: 100%; height: auto;"></canvas>
 
-  <br>
-  <button onclick="downloadImage()">📥 Tải ảnh voucher</button>
+  <div id="imageContainer"></div> <!-- nơi hiển thị ảnh đã tạo -->
 
   <script>
     function removeVietnamese(str) {
@@ -67,7 +70,7 @@
         return;
       }
 
-      // ✅ Reset input ngay sau khi bấm nút
+      // Reset input sau khi tạo
       nameInput.value = '';
       dateInput.value = '';
 
@@ -90,20 +93,27 @@
         ctx.font = 'bold 35px Arial';
         ctx.fillStyle = '#000';
 
-        // 📍Vị trí chữ tương ứng ảnh kích thước 2000x1199
-        ctx.fillText(code, 180, 230);       // mã voucher
-        ctx.fillText(expiredStr, 980, 230); // ngày hết hạn
+        ctx.fillText(code, 180, 230);       // vị trí mã voucher
+        ctx.fillText(expiredStr, 980, 230); // vị trí ngày hết hạn
+
+        showImage(); // hiển thị ảnh từ canvas
       };
 
       img.src = 'voucher_template.png?' + new Date().getTime(); // tránh cache
     }
 
-    function downloadImage() {
+    function showImage() {
       const canvas = document.getElementById('voucherCanvas');
-      const link = document.createElement('a');
-      link.download = 'voucher.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+      const imgURL = canvas.toDataURL("image/png");
+
+      const imageContainer = document.getElementById('imageContainer');
+      imageContainer.innerHTML = ''; // xoá ảnh cũ nếu có
+
+      const img = document.createElement('img');
+      img.src = imgURL;
+      img.className = 'generated';
+
+      imageContainer.appendChild(img);
     }
   </script>
 
