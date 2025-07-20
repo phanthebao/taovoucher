@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tạo Voucher</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      text-align: center;
+      padding: 10px;
+    }
+    input, button {
+      width: 90%;
+      max-width: 400px;
+      padding: 10px;
+      font-size: 16px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    canvas {
+      margin-top: 20px;
+      max-width: 100%;
+      border: 1px solid #ccc;
+    }
+    a#downloadLink {
+      display: none;
+      margin-top: 12px;
+      font-size: 16px;
+      color: #007bff;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>TẠO VOUCHER</h2>
+  <input type="text" id="name" placeholder="Họ tên khách hàng">
+  <input type="date" id="createDate">
+  <button onclick="generateVoucher()">Tạo voucher</button>
+
+  <canvas id="voucherCanvas" width="2000" height="1050"></canvas>
+  <br>
+  <a id="downloadLink" download="voucher.png">📥 Tải ảnh voucher</a>
+
+  <script>
+    function removeVietnamese(str) {
+      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
+    }
+
+    function formatDate(d) {
+      return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    }
+
+    function generateVoucher() {
+      const nameInput = document.getElementById('name');
+      const dateInput = document.getElementById('createDate');
+
+      const nameValue = nameInput.value.trim();
+      const dateStr = dateInput.value;
+
+      if (!nameValue || !dateStr) {
+        alert("Vui lòng nhập đầy đủ thông tin.");
+        return;
+      }
+
+      // ✅ Reset input ngay sau khi bấm nút
+      nameInput.value = '';
+      dateInput.value = '';
+
+      const canvas = document.getElementById('voucherCanvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const nameClean = removeVietnamese(nameValue.toUpperCase());
+        const date = new Date(dateStr);
+        const code = `${nameClean}_${String(date.getDate()).padStart(2, '0')}${String(date.getMonth() + 1).padStart(2, '0')}${date.getFullYear()}`;
+
+        const expiredDate = new Date(date);
+        expiredDate.setDate(expiredDate.getDate() + 30);
+        const expiredStr = formatDate(expiredDate);
+
+        ctx.font = 'bold 36px Arial';
+        ctx.fillStyle = '#000';
+
+        // 📍Vị trí mã voucher và ngày hết hạn (chỉnh theo hình)
+        ctx.fillText(code, 180, 230);       // mã voucher
+        ctx.fillText(expiredStr, 980, 230); // ngày hết hạn
+
+        const link = document.getElementById('downloadLink');
+        link.href = canvas.toDataURL('image/png');
+        link.style.display = 'inline';
+      };
+
+      // ⚠️ Đảm bảo ảnh luôn load lại (tránh cache)
+      img.src = 'voucher_template.png?' + new Date().getTime();
+    }
+  </script>
+
+</body>
+</html>
