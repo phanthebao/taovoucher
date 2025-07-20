@@ -41,9 +41,12 @@
 <body>
 
   <h2>TẠO VOUCHER</h2>
-  <input type="text" id="name" placeholder="Họ tên khách hàng">
-  <input type="date" id="createDate">
-  <button onclick="generateVoucher()">Tạo voucher</button>
+<input type="text" id="name" placeholder="Họ tên khách hàng">
+<input type="date" id="createDate">
+<p style="font-size: 14px; color: #555;">
+  Điền tên khách hàng – chọn ngày tạo voucher, hệ thống sẽ tự tính 30 ngày hết hạn để in lên voucher.
+</p>
+<button onclick="generateVoucher()">Tạo voucher</button>
 
   <canvas id="voucherCanvas" width="2000" height="1050" style="width: 100%; height: auto;"></canvas>
 
