@@ -1,57 +1,57 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tạo Voucher</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f3f3f3;
+      background: #f2f2f2;
       text-align: center;
-      padding: 20px;
-    }
-    h2 {
-      color: #111;
+      padding: 10px;
     }
     input, button {
+      width: 90%;
+      max-width: 400px;
       padding: 10px;
       font-size: 16px;
-      margin: 5px;
-      border-radius: 5px;
+      margin: 8px 0;
       border: 1px solid #ccc;
+      border-radius: 5px;
     }
     button {
-      background-color: #007bff;
+      background: #007bff;
       color: white;
       border: none;
-    }
-    #imageContainer {
-      margin-top: 20px;
+      cursor: pointer;
     }
     canvas {
-      display: none;
+      margin-top: 20px;
+      max-width: 100%;
+      border: 1px solid #ccc;
     }
-    p.note {
-      font-size: 14px;
-      color: #555;
-      text-align: center;
-      margin-top: 5px;
-      font-style: italic;
+    img.generated {
+      width: 100%;
+      margin-top: 20px;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
+
   <h2>TẠO VOUCHER</h2>
-  <input type="text" id="name" placeholder="Họ tên khách hàng">
-  <input type="date" id="createDate">
-  <br>
-  <p class="note">Điền tên khách hàng – chọn ngày tạo voucher, hệ thống sẽ tự tính 30 ngày hết hạn để in lên voucher.</p>
-  <button onclick="generateVoucher()">Tạo voucher</button>
+<input type="text" id="name" placeholder="Họ tên khách hàng">
+<input type="date" id="createDate">
+<p style="font-size: 14px; color: #555; text-align: center; margin-top: 10px; font-style: italic;">
+  Điền tên khách hàng – chọn ngày tạo voucher, hệ thống sẽ tự tính 30 ngày hết hạn để in lên voucher.
+</p>
 
-  <canvas id="voucherCanvas" width="2000" height="1050"></canvas>
+<button onclick="generateVoucher()">Tạo voucher</button>
 
-  <div id="imageContainer"></div>
+  <canvas id="voucherCanvas" width="2000" height="1050" style="width: 100%; height: auto;"></canvas>
+
+  <div id="imageContainer"></div> <!-- nơi hiển thị ảnh đã tạo -->
 
   <script>
     function removeVietnamese(str) {
@@ -70,50 +70,56 @@
       const dateStr = dateInput.value;
 
       if (!nameValue || !dateStr) {
-        alert("Vui lòng nhập đủ thông tin.");
+        alert("Vui lòng nhập đầy đủ thông tin.");
         return;
       }
 
+      // Reset input sau khi tạo
+      nameInput.value = '';
+      dateInput.value = '';
+
       const canvas = document.getElementById('voucherCanvas');
       const ctx = canvas.getContext('2d');
+      const img = new Image();
 
-      const image = new Image();
-      image.onload = function () {
-        // Vẽ hình nền gốc
+      img.onload = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // Tạo mã voucher (in hoa, không dấu)
-        const nameNoAccent = removeVietnamese(nameValue).toUpperCase();
-        const createDate = new Date(dateStr);
-        const voucherCode = `${nameNoAccent}_${formatDate(createDate).replace(/\//g, '')}`;
+        const nameClean = removeVietnamese(nameValue.toUpperCase());
+        const date = new Date(dateStr);
+        const code = `${nameClean}_${String(date.getDate()).padStart(2, '0')}${String(date.getMonth() + 1).padStart(2, '0')}${date.getFullYear()}`;
 
-        // Tính ngày hết hạn
-        const expireDate = new Date(createDate);
-        expireDate.setDate(expireDate.getDate() + 30);
-        const expireStr = formatDate(expireDate);
+        const expiredDate = new Date(date);
+        expiredDate.setDate(expiredDate.getDate() + 30);
+        const expiredStr = formatDate(expiredDate);
 
-        // Ghi thông tin lên ảnh
-        ctx.font = "bold 40px Arial";
-        ctx.fillStyle = "#fff";
-        ctx.fillText(voucherCode, 180, 230); // vị trí mã
-        ctx.fillText(expireStr, 980, 230);   // vị trí ngày hết hạn
+        ctx.font = 'bold 35px Arial';
+        ctx.fillStyle = '#000';
 
-        // Hiển thị ảnh
-        const imageContainer = document.getElementById('imageContainer');
-        imageContainer.innerHTML = ''; // clear cũ
-        const img = new Image();
-        img.src = canvas.toDataURL('image/png', 1.0); // chất lượng cao
-        img.style.maxWidth = '100%';
-        img.style.height = 'auto';
-        imageContainer.appendChild(img);
+        ctx.fillText(code, 180, 230);       // vị trí mã voucher
+        ctx.fillText(expiredStr, 980, 230); // vị trí ngày hết hạn
 
-        // Reset ô input
-        nameInput.value = '';
-        dateInput.value = '';
+        showImage(); // hiển thị ảnh từ canvas
       };
-      image.src = 'voucher_template.png'; // ảnh nền phải cùng thư mục
+
+      img.src = 'voucher_template.png?' + new Date().getTime(); // tránh cache
+    }
+
+    function showImage() {
+      const canvas = document.getElementById('voucherCanvas');
+      const imgURL = canvas.toDataURL("image/png");
+
+      const imageContainer = document.getElementById('imageContainer');
+      imageContainer.innerHTML = ''; // xoá ảnh cũ nếu có
+
+      const img = document.createElement('img');
+      img.src = imgURL;
+      img.className = 'generated';
+
+      imageContainer.appendChild(img);
     }
   </script>
+
 </body>
 </html>
